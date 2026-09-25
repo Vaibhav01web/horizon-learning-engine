@@ -14,9 +14,13 @@ import { DEMO_PACKS, type DemoPack } from "./demo-packs";
 
 loadEnv(".env.local");
 
-const { db, uploadToBucket } = await import("../src/lib/supabase");
-const { renderMeme } = await import("../src/lib/meme-render");
-const { chunkText } = await import("../src/lib/embeddings");
+// Imported dynamically so loadEnv runs first — these modules read the
+// environment as soon as they are evaluated.
+type SupabaseLib = typeof import("../src/lib/supabase");
+let db: SupabaseLib["db"];
+let uploadToBucket: SupabaseLib["uploadToBucket"];
+let renderMeme: typeof import("../src/lib/meme-render")["renderMeme"];
+let chunkText: typeof import("../src/lib/embeddings")["chunkText"];
 
 /** Minimal .env reader — the script runs outside Next, which would load it. */
 function loadEnv(path: string): void {
@@ -176,16 +180,27 @@ async function insert(table: string, rows: Record<string, unknown>[]): Promise<v
   if (error) throw new Error(`${table} insert failed: ${error.message}`);
 }
 
-console.log(`Seeding ${DEMO_PACKS.length} demo study packs…\n`);
+async function main(): Promise<void> {
+  ({ db, uploadToBucket } = await import("../src/lib/supabase"));
+  ({ renderMeme } = await import("../src/lib/meme-render"));
+  ({ chunkText } = await import("../src/lib/embeddings"));
 
-for (const pack of DEMO_PACKS) {
-  const packId = await seed(pack);
-  console.log(
-    `  ${pack.title}\n` +
-      `    ${packId}\n` +
-      `    ${pack.flashcards.length} flashcards · ${pack.mcqs.length} MCQs · ` +
-      `${pack.memes.length} memes · ${pack.resources.length} resources\n`,
-  );
+  console.log(`Seeding ${DEMO_PACKS.length} demo study packs…\n`);
+
+  for (const pack of DEMO_PACKS) {
+    const packId = await seed(pack);
+    console.log(
+      `  ${pack.title}\n` +
+        `    ${packId}\n` +
+        `    ${pack.flashcards.length} flashcards · ${pack.mcqs.length} MCQs · ` +
+        `${pack.memes.length} memes · ${pack.resources.length} resources\n`,
+    );
+  }
+
+  console.log("Done. The packs are on the landing page and in Community.");
 }
 
-console.log("Done. Open the client and the packs are on the landing page and in Community.");
+main().catch((error) => {
+  console.error("\nSeeding failed:", error instanceof Error ? error.message : error);
+  process.exit(1);
+});

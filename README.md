@@ -44,6 +44,30 @@ In the Supabase SQL editor, run `supabase/migrations/0001_init.sql`. It enables
 function, row-level security policies, and the three storage buckets. The file
 is safe to re-run.
 
+<details>
+<summary><strong>Alternative: run Supabase locally with Docker</strong></summary>
+
+Needs Docker running. No account, no cloud project:
+
+```bash
+npx supabase start          # first run pulls ~2 GB of images
+npx supabase status -o env  # prints the URL and keys
+```
+
+`supabase start` applies everything in `supabase/migrations/` automatically, so
+step 2 is already done. Take `API_URL`, `ANON_KEY` and `SERVICE_ROLE_KEY` from
+the status output and use them in step 3.
+
+To skip services this app never touches and cut the download roughly in half:
+
+```bash
+npx supabase start -x studio,edge-runtime,logflare,vector,imgproxy,mailpit,supavisor,postgres-meta
+```
+
+Stop it with `npx supabase stop`, which leaves the data volume intact.
+
+</details>
+
 **3. Configure the API**
 
 ```bash
