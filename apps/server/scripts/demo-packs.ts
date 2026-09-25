@@ -311,11 +311,11 @@ Self-inductance describes a coil opposing changes in its own current; mutual ind
         question: "Why is a transformer core made of thin insulated laminations rather than solid iron?",
         options: [
           "To increase the magnetic flux through the core",
-          "To reduce energy lost to eddy currents",
           "To make the core lighter and cheaper",
           "To increase the mutual inductance between coils",
+          "To reduce energy lost to eddy currents",
         ],
-        correct_index: 1,
+        correct_index: 3,
         explanation:
           "Laminations break up the paths available to eddy currents, cutting resistive heating losses. Flux and mutual inductance are governed by the core's permeability and the coil geometry, not by lamination — laminating actually reduces the usable cross-section slightly.",
         topic: "Eddy Currents",
@@ -489,8 +489,8 @@ Breadth-first search explores level by level using a queue and finds shortest pa
     mcqs: [
       {
         question: "Keys 10, 20, 30, 40, 50 are inserted in that order into an empty unbalanced BST. What is the resulting height?",
-        options: ["log₂(5) ≈ 2", "5", "3", "1"],
-        correct_index: 1,
+        options: ["log₂(5) ≈ 2", "3", "1", "5"],
+        correct_index: 3,
         explanation:
           "Each key exceeds all before it, so every node becomes the right child of its predecessor — a linked list of height 5. The distractor log₂(5) assumes balance, which nothing here provides; that assumption is exactly the trap.",
         topic: "Binary Search Trees",
@@ -508,12 +508,12 @@ Breadth-first search explores level by level using a queue and finds shortest pa
       {
         question: "A graph has 10,000 vertices and roughly 30,000 edges. Which representation should you choose?",
         options: [
-          "Adjacency matrix, for O(1) edge lookup",
           "Adjacency list, because the graph is sparse",
+          "Adjacency matrix, for O(1) edge lookup",
           "Edge list, because it uses the least memory",
           "Either — space is identical at this size",
         ],
-        correct_index: 1,
+        correct_index: 0,
         explanation:
           "A matrix needs 10⁸ entries; the list needs about 4×10⁴. With E far below V², the list wins decisively. O(1) edge lookup is real but rarely worth four orders of magnitude of memory.",
         topic: "Graph Representation",
