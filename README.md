@@ -202,22 +202,43 @@ service-role key must never appear in this list.
 Until `VITE_API_URL` is set, the site renders with a banner explaining that the
 API is not deployed.
 
-**API → Vercel / Render / Railway.** GitHub Pages is static-only and cannot run
-the Next.js API. `apps/server/vercel.json` sets the monorepo build commands and
-declares two crons:
+**API → Render.** GitHub Pages is static-only and cannot run the Next.js API.
+`render.yaml` is a Blueprint: in Render, choose **New → Blueprint**, pick this
+repository, and it provisions the service from `apps/server/Dockerfile`.
 
-- `/api/jobs/run` every minute — drains the generation queue
-- `/api/alerts/send` daily — sends WhatsApp revision reminders
+The API ships as a container because the Doubt-Buster PDF is rendered by
+Puppeteer, and a stock Node image rarely carries the shared libraries Chrome
+needs. The image installs Debian's `chromium` and points
+`PUPPETEER_EXECUTABLE_PATH` at it.
 
-Vercel's Hobby plan only permits daily crons. On Hobby, either run
-`npm run worker -w @zpl/server` as a long-lived process elsewhere, or point an
-external scheduler at `/api/jobs/run`. Vercel sends `Authorization: Bearer
-$CRON_SECRET` on cron requests, so set `WORKER_SECRET` to the same value as
-`CRON_SECRET`.
+Render prompts for these on first deploy:
 
-After deploying the API, set `CORS_ALLOWED_ORIGINS` to your Pages origin and
-`PUBLIC_APP_URL` to the same value — the PDF's chat links and the WhatsApp
-practice links are built from it.
+| Variable | Value |
+|---|---|
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Supabase `service_role` key |
+| `CORS_ALLOWED_ORIGINS` | Your GitHub Pages origin |
+| `PUBLIC_APP_URL` | The same Pages origin |
+| `ANTHROPIC_API_KEY` | Optional — without it the site is browsable from the seeded packs and generating a new pack fails with a clear message |
+
+`WORKER_SECRET` is generated automatically.
+
+Because Render keeps the process alive between requests, the blueprint sets
+`INLINE_WORKER=true`: a queued job starts the moment it is created rather than
+waiting for a scheduled drain, so no worker process or cron is needed. On a
+serverless host, leave `INLINE_WORKER` unset — the process is frozen after the
+response — and drive `/api/jobs/run` from a scheduler instead.
+
+A free Render service sleeps after 15 minutes of inactivity, so the first
+request after an idle period takes roughly 50 seconds. Deliberately there is no
+keep-alive ping: running 24/7 would consume the whole 750-hour monthly
+allowance.
+
+**Also on Vercel.** `apps/server/vercel.json` remains, with crons for
+`/api/jobs/run` and `/api/alerts/send`. Two caveats: Hobby crons run only once a
+day, and Chrome exceeds the serverless bundle limit, so PDF export needs
+`@sparticuz/chromium` there. Vercel sends `Authorization: Bearer $CRON_SECRET`,
+so set `WORKER_SECRET` to match.
 
 ## Notes
 

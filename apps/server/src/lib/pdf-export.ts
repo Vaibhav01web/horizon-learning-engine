@@ -14,7 +14,11 @@ export async function buildDoubtBusterPdf(bundle: StudyPackBundle): Promise<stri
 
   const browser = await puppeteer.launch({
     headless: true,
+    // Containers run as root with a small /dev/shm; both flags are required
+    // there and harmless locally.
     args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    // Falls back to Puppeteer's own download when the host does not supply one.
+    executablePath: env.puppeteerExecutablePath,
   });
 
   try {

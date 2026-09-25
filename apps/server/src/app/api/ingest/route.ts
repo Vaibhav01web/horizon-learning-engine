@@ -1,4 +1,5 @@
 import { ingestRequestSchema } from "@zpl/shared-types";
+import { env } from "@/lib/env";
 import { HttpError, ok, parseBody, route } from "@/lib/http";
 import { db, unwrap } from "@/lib/supabase";
 import { normalizeText } from "@/lib/ingest";
@@ -67,6 +68,14 @@ export const POST = route(async (request) => {
       .select("id")
       .single(),
   ) as { id: string };
+
+  // Start the work now where the host allows it, so the processing screen
+  // begins advancing immediately rather than at the next scheduled drain.
+  if (env.inlineWorker) {
+    void import("@/lib/jobs/runner")
+      .then(({ runNextJob }) => runNextJob())
+      .catch((error) => console.error("[ingest] inline worker failed", error));
+  }
 
   return ok({ packId: pack.id, jobId: job.id }, 202);
 });

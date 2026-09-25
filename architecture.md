@@ -304,11 +304,19 @@ offline PDF, and the contextual help is one tap away.
 
 | Piece | Target | Notes |
 |---|---|---|
-| `apps/client` | Vercel / Netlify / any static host | `npm run build -w @zpl/client` → `dist/` |
-| `apps/server` | Vercel / Render / Railway | Needs a Chrome binary for PDF export |
+| `apps/client` | GitHub Pages (workflow included) | Static `dist/`; base path and router basename come from the repo name |
+| `apps/server` | Render, from `apps/server/Dockerfile` | Container so Chrome is present for PDF export |
 | Database | Supabase Cloud | Apply `supabase/migrations/0001_init.sql` |
-| Worker | Vercel cron, or `npm run worker` | Hits `POST /api/jobs/run` |
+| Worker | `INLINE_WORKER=true`, or `POST /api/jobs/run` | Inline on a persistent host; scheduled on a serverless one |
 | Alerts | Scheduled `POST /api/alerts/send` | Twilio WhatsApp sandbox for the demo |
+
+The worker has two modes because hosts differ in one respect that matters: does
+the process survive after the response? On Render it does, so `/api/ingest`
+kicks off `runNextJob()` without awaiting it and the processing screen starts
+advancing immediately. On a serverless host the process is frozen the moment the
+response is sent, so that call would be cut off mid-job; there, `INLINE_WORKER`
+stays unset and a scheduler drives `/api/jobs/run` instead. Both paths run the
+same runner.
 
 Set `CORS_ALLOWED_ORIGINS` to the client's deployed origin and `PUBLIC_APP_URL`
 to the same value — the latter is what the PDF's chat links and the WhatsApp

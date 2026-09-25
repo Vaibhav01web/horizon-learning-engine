@@ -52,6 +52,19 @@ export const env = {
   get workerSecret() {
     return optional("WORKER_SECRET");
   },
+  /** Set when the container ships its own Chrome rather than Puppeteer's. */
+  get puppeteerExecutablePath() {
+    return optional("PUPPETEER_EXECUTABLE_PATH");
+  },
+  /**
+   * On a host that keeps the process alive between requests, a queued job can
+   * start the moment it is created instead of waiting for the next scheduled
+   * drain. Serverless hosts freeze the process after the response, so this
+   * stays off unless the deployment opts in.
+   */
+  get inlineWorker() {
+    return process.env.INLINE_WORKER === "true";
+  },
   /** Hard ceiling on Claude spend per pack, enforced by the job runner. */
   get maxClaudeCallsPerPack() {
     return Number(process.env.MAX_CLAUDE_CALLS_PER_PACK ?? 12);
