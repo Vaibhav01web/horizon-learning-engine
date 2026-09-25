@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+
+      - name: Typecheck every workspace
+        run: npm run typecheck
+
+      - name: Build every workspace
+        run: npm run build
+
+      - name: Render every route server-side
+        # Catches import cycles, hook misuse, and crashes on first paint
+        # without needing a browser.
+        run: npm run smoke -w @zpl/client

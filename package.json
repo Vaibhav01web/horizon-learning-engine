@@ -1,0 +1,23 @@
+{
+  "name": "zero-prompt-learning",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:client": "npm run dev -w @zpl/client",
+    "dev:server": "npm run dev -w @zpl/server",
+    "build": "npm run build -w @zpl/shared-types && npm run build -w @zpl/server && npm run build -w @zpl/client",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

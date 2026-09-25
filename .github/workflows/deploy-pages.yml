@@ -1,0 +1,72 @@
+name: Deploy client to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Pages needs these; the token is scoped to this workflow only.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Puppeteer's Chrome is only needed by the API at runtime, never here.
+      - run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+
+      - name: Build the SPA
+        working-directory: apps/client
+        env:
+          # A project site is served from /<repo>/, so assets and the router
+          # both need that prefix.
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Set these as repository variables (Settings -> Secrets and variables
+          # -> Actions -> Variables). They are compiled into the public bundle,
+          # so only ever put publishable values here: the API's URL and the
+          # Supabase anon key, which is designed to be public and constrained
+          # by the row level security policies in the migration.
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      - name: Add SPA fallback
+        # Pages has no rewrite rules, so an unknown path such as /study/<id>
+        # would 404. Serving the app as 404.html lets the router take over.
+        run: cp apps/client/dist/index.html apps/client/dist/404.html
+
+      - name: Disable Jekyll
+        # Without this, Pages strips files and folders beginning with _.
+        run: touch apps/client/dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/client/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

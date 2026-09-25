@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+apps/*/.env
+apps/*/.env.local
+
+.DS_Store
+*.log
+.vercel
+.turbo
+
+# SSR smoke-test output
+apps/client/dist-ssr/
