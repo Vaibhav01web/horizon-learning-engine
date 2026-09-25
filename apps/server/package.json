@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start --port 4000",
     "typecheck": "tsc --noEmit",
-    "worker": "tsx scripts/worker.ts"
+    "worker": "tsx scripts/worker.ts",
+    "seed": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",

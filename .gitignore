@@ -17,3 +17,7 @@ apps/*/.env.local
 
 # SSR smoke-test output
 apps/client/dist-ssr/
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/

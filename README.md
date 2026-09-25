@@ -72,7 +72,26 @@ Set `VITE_API_URL`, plus `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for
 live progress and leaderboards. Without the Supabase values the app polls
 instead — everything still works, it just updates less often.
 
-**5. Run**
+**5. Seed demo packs (optional, no Claude key needed)**
+
+```bash
+npm run seed -w @zpl/server
+```
+
+Inserts two fully-formed study packs — Electromagnetic Induction (Physics) and
+Trees and Graphs (Computer Science) — written by hand in exactly the shape the
+pipeline produces. Memes are composited for real through `sharp` and uploaded to
+Storage.
+
+This exists so the app can be demonstrated end to end without spending a Claude
+call and without waiting on generation. Every tab works from seeded data:
+Overview, Mind Map, Flashcards with spaced repetition, MCQs with grading and
+weak-topic detection, Memes, Resources, Battles, Community, and the PDF. Only
+the chatbot and generating a *new* pack need `ANTHROPIC_API_KEY`.
+
+Re-running replaces the demo packs and leaves anything you created alone.
+
+**6. Run**
 
 Three terminals:
 
@@ -99,6 +118,7 @@ curl http://localhost:4000/api/health
 | `npm run typecheck` | Typechecks every workspace |
 | `npm run smoke -w @zpl/client` | Renders every route server-side — catches runtime crashes without a browser |
 | `npm run worker -w @zpl/server` | Drains the job queue |
+| `npm run seed -w @zpl/server` | Inserts the pre-generated demo study packs |
 
 ## API
 
